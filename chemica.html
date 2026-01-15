@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Numerical Primer for Chemical Engineering</title>
+
+    <!-- MathJax CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            margin: 40px;
+            background-color: #fefefe;
+            color: #111;
+        }
+        h1, h2, h3 {
+            color: #2a5d84;
+        }
+        code, pre {
+            background: #f4f4f4;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .plot-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        iframe.simulation {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        nav {
+            margin-bottom: 30px;
+        }
+        nav a {
+            margin-right: 15px;
+            color: #2a5d84;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Numerical Primer for Chemical Engineering</h1>
+    <nav>
+        <a href="#chapter1">Chapter 1</a>
+        <a href="#chapter2">Chapter 2</a>
+        <a href="#chapter3">Chapter 3</a>
+        <a href="#chapter4">Chapter 4</a>
+        <a href="#chapter5">Chapter 5</a>
+        <a href="#chapter6">Chapter 6</a>
+        <a href="#chapter7">Chapter 7</a>
+        <a href="#chapter8">Chapter 8</a>
+        <a href="#chapter9">Chapter 9</a>
+        <a href="#chapter10">Chapter 10</a>
+    </nav>
+
+    <!-- Chapters Skeleton -->
+   <h2 id="chapter1">Chapter 1: Introduction to Numerical Methods</h2>
+
+<p>
+Chemical engineering processes often involve complex mathematical models that cannot be solved analytically. 
+Numerical methods provide approximate solutions to problems such as:
+</p>
+
+<ul>
+    <li>Ordinary differential equations (ODEs) in reactors</li>
+    <li>Partial differential equations (PDEs) in heat and mass transfer</li>
+    <li>Nonlinear algebraic equations in process design</li>
+    <li>Optimization of chemical processes</li>
+</ul>
+
+<h3>1.1 Importance of Numerical Methods</h3>
+<p>
+Many chemical processes are governed by equations that are impossible to solve by hand. For example, consider a <strong>continuous stirred-tank reactor (CSTR)</strong> with first-order reaction:
+</p>
+
+<p>
+$$
+\frac{dC_A}{dt} = \frac{F}{V} (C_{A0} - C_A) - k C_A
+$$
+</p>
+
+<p>
+Where:  
+<em>C_A</em> = concentration of reactant A (mol/L)  
+<em>F</em> = volumetric flow rate (L/s)  
+<em>V</em> = reactor volume (L)  
+<em>k</em> = reaction rate constant (1/s)  
+<em>C_{A0}</em> = inlet concentration (mol/L)  
+</p>
+
+<p>
+Analytical solutions exist for simple cases, but for complex reaction networks or time-varying flow, we use <strong>numerical integration methods</strong>.
+</p>
+
+<h3>1.2 Types of Numerical Methods</h3>
+
+<ol>
+    <li><strong>Root-Finding Methods:</strong> Solve nonlinear equations, e.g., Newton-Raphson method.</li>
+    <li><strong>Numerical Integration:</strong> Approximate definite integrals using trapezoidal or Simpson's rule.</li>
+    <li><strong>Numerical Differentiation:</strong> Approximate derivatives when analytic differentiation is difficult.</li>
+    <li><strong>Solving ODEs:</strong> Methods like Euler, Runge-Kutta, and MATLAB’s <code>ode45</code>.</li>
+    <li><strong>Solving PDEs:</strong> Finite difference, finite element, or finite volume methods.</li>
+</ol>
+
+<h3>1.3 MATLAB Example: Simulating a CSTR</h3>
+
+<p>
+We can simulate the CSTR concentration over time using MATLAB’s <code>ode45</code> solver:
+</p>
+
+<pre><code>
+% MATLAB Code: CSTR Simulation
+k = 0.1;          % reaction rate constant (1/s)
+F = 1; V = 10;    % flow rate and volume
+C_A0 = 1;         % inlet concentration
+tspan = [0 50];   % simulation time
+
+% Define ODE
+ode = @(t,C) (F/V)*(C_A0-C) - k*C;
+
+% Solve ODE
+[T,C] = ode45(ode,tspan,C_A0);
+
+% Plot results
+plot(T,C,'LineWidth',2)
+xlabel('Time (s)')
+ylabel('Concentration C_A (mol/L)')
+title('CSTR Concentration Over Time')
+grid on
+</code></pre>
+
+<div class="plot-container">
+    <img src="Figure_1.png" alt="CSTR Concentration Plot" width="600">
+</div>
+
+<h3>1.4 Summary</h3>
+<ul>
+    <li>Chemical engineering problems often require numerical methods due to complex governing equations.</li>
+    <li>Numerical methods include root-finding, integration, differentiation, ODE/PDE solvers, and optimization.</li>
+    <li>MATLAB provides powerful tools for simulation, visualization, and analysis.</li>
+    <li>Understanding numerical methods is the foundation for solving real-world chemical engineering problems.</li>
+</ul>
+
+   <h2 id="chapter2">Chapter 2: Numerical Integration Methods</h2>
+
+<p>
+In chemical engineering, many problems require evaluating definite integrals that cannot be solved analytically. 
+Numerical integration methods provide approximate solutions with controllable accuracy.
+</p>
+
+<h3>2.1 Importance of Numerical Integration</h3>
+
+<p>
+Examples of integrals in chemical engineering:
+</p>
+
+<ul>
+    <li>Calculating reactor conversions and yields</li>
+    <li>Heat transfer integrals in conduction and convection problems</li>
+    <li>Estimating area under curves for experimental data</li>
+    <li>Computing moments of distribution in fluid mechanics</li>
+</ul>
+
+<p>
+For instance, consider the integral of a concentration-dependent reaction rate over time:
+</p>
+
+<p>
+$$
+\text{Conversion} = \int_0^{t_f} k C_A(t) \, dt
+$$
+</p>
+
+<p>
+If \(C_A(t)\) is known only at discrete points or its analytical solution is difficult, numerical methods become necessary.
+</p>
+
+<h3>2.2 Common Numerical Integration Methods</h3>
+
+<ol>
+    <li>
+        <strong>Trapezoidal Rule:</strong> Approximates the area under the curve as a series of trapezoids.
+        <p>
+        Formula for \(n\) intervals:
+        $$
+        \int_a^b f(x) \, dx \approx \frac{h}{2} \Big[ f(x_0) + 2 \sum_{i=1}^{n-1} f(x_i) + f(x_n) \Big], \quad h = \frac{b-a}{n}
+        $$
+        </p>
+    </li>
+    <li>
+        <strong>Simpson’s Rule:</strong> Approximates the curve with parabolas over intervals.
+        <p>
+        Formula for an even number \(n\) of intervals:
+        $$
+        \int_a^b f(x) \, dx \approx \frac{h}{3} \Big[ f(x_0) + 4 \sum_{i=1, \text{odd}}^{n-1} f(x_i) + 2 \sum_{i=2, \text{even}}^{n-2} f(x_i) + f(x_n) \Big]
+        $$
+        </p>
+    </li>
+    <li>
+        <strong>Midpoint Rule:</strong> Uses the midpoint of each interval to approximate the integral.
+        <p>
+        $$
+        \int_a^b f(x) \, dx \approx h \sum_{i=0}^{n-1} f\Big(\frac{x_i + x_{i+1}}{2}\Big)
+        $$
+        </p>
+    </li>
+</ol>
+
+<h3>2.3 MATLAB Example: Trapezoidal Rule</h3>
+
+<p>
+Let’s compute the integral of \(f(x) = e^{-x^2}\) from 0 to 1 using the trapezoidal rule in MATLAB:
+</p>
+
+<pre><code>
+% MATLAB Code: Trapezoidal Rule
+f = @(x) exp(-x.^2);  % Function to integrate
+a = 0; b = 1;          % Integration limits
+n = 100;               % Number of intervals
+x = linspace(a,b,n+1);
+y = f(x);
+h = (b-a)/n;
+
+I_trap = h*(0.5*y(1) + sum(y(2:n)) + 0.5*y(n+1));
+disp(['Trapezoidal Rule Integral: ', num2str(I_trap)])
+</code></pre>
+
+<h3>2.4 MATLAB Example: Simpson’s Rule</h3>
+
+<pre><code>
+% MATLAB Code: Simpson's Rule
+if mod(n,2) ~= 0
+    n = n + 1;  % Make n even
+end
+x = linspace(a,b,n+1);
+y = f(x);
+h = (b-a)/n;
+
+I_simp = h/3 * (y(1) + y(end) + ...
+          4*sum(y(2:2:end-1)) + 2*sum(y(3:2:end-2)));
+disp(['Simpson''s Rule Integral: ', num2str(I_simp)])
+</code></pre>
+
+<div class="plot-container">
+    <img src="figure2.png" alt="Numerical Integration Plot" width="600">
+</div>
+
+<h3>2.5 Summary</h3>
+<ul>
+    <li>Numerical integration approximates definite integrals when analytical solutions are difficult.</li>
+    <li>Common methods: Trapezoidal, Simpson’s, and Midpoint Rules.</li>
+    <li>Accuracy increases with more intervals and appropriate method selection.</li>
+    <li>MATLAB provides simple and reliable ways to implement these methods for chemical engineering problems.</li>
+</ul>
+
+
+    <h2 id="chapter3">Chapter 3: Numerical Differentiation</h2>
+
+<p>
+In chemical engineering, derivatives of functions often represent **rates of change**, such as reaction rates, heat flux, or mass transfer rates. 
+When analytical differentiation is difficult or data is discrete, **numerical differentiation** provides approximate values.
+</p>
+
+<h3>3.1 Importance of Numerical Differentiation</h3>
+
+<p>
+Examples in chemical engineering:
+</p>
+<ul>
+    <li>Determining reaction rate from concentration vs. time data</li>
+    <li>Calculating temperature gradients in heat exchangers</li>
+    <li>Estimating velocity gradients in fluid flow experiments</li>
+    <li>Evaluating changes in properties from experimental measurements</li>
+</ul>
+
+<h3>3.2 Common Numerical Differentiation Methods</h3>
+
+<ol>
+    <li>
+        <strong>Forward Difference:</strong> Uses the next data point to approximate the derivative.
+        <p>
+        $$
+        f'(x_i) \approx \frac{f(x_{i+1}) - f(x_i)}{h}
+        $$
+        </p>
+    </li>
+    <li>
+        <strong>Backward Difference:</strong> Uses the previous data point.
+        <p>
+        $$
+        f'(x_i) \approx \frac{f(x_i) - f(x_{i-1})}{h}
+        $$
+        </p>
+    </li>
+    <li>
+        <strong>Central Difference:</strong> Uses the average of forward and backward differences for higher accuracy.
+        <p>
+        $$
+        f'(x_i) \approx \frac{f(x_{i+1}) - f(x_{i-1})}{2h}
+        $$
+        </p>
+    </li>
+</ol>
+
+<p>
+Where \(h = x_{i+1} - x_i\) is the step size.
+</p>
+
+<h3>3.3 MATLAB Example: Numerical Differentiation</h3>
+
+<p>
+Consider the function \(f(x) = \sin(x)\) over the interval \([0, \pi]\). We can approximate its derivative numerically:
+</p>
+
+<pre><code>
+% MATLAB Code: Numerical Differentiation
+f = @(x) sin(x);         % Function
+a = 0; b = pi;           % Interval
+n = 100;                 % Number of points
+x = linspace(a,b,n);
+h = x(2) - x(1);
+y = f(x);
+
+% Forward difference
+d_forward = (y(2:end) - y(1:end-1)) / h;
+
+% Central difference
+d_central = (y(3:end) - y(1:end-2)) / (2*h);
+x_central = x(2:end-1);
+
+% Plot results
+plot(x, cos(x), 'k', 'LineWidth', 2); hold on;
+plot(x(1:end-1), d_forward, 'r--', 'LineWidth', 1.5);
+plot(x_central, d_central, 'b-.', 'LineWidth', 1.5);
+xlabel('x');
+ylabel('f''(x)');
+title('Numerical Differentiation of f(x) = sin(x)');
+legend('Analytical', 'Forward Difference', 'Central Difference');
+grid on;
+</code></pre>
+
+<div class="plot-container">
+    <img src="figure2.png" alt="Numerical Differentiation Plot" width="600">
+</div>
+
+<h3>3.4 Summary</h3>
+<ul>
+    <li>Numerical differentiation is used when analytical derivatives are unavailable or data is discrete.</li>
+    <li>Common methods: Forward, Backward, and Central differences.</li>
+    <li>Central difference generally provides higher accuracy for the same step size.</li>
+    <li>MATLAB makes it easy to implement and visualize derivatives of functions.</li>
+</ul>
+
+<h2 id="chapter4">Chapter 4: Solutions of Nonlinear Equations</h2>
+
+<p>
+Many chemical engineering problems involve **nonlinear equations** that cannot be solved analytically. Examples include:
+</p>
+
+<ul>
+    <li>Finding the concentration at equilibrium in a reaction</li>
+    <li>Solving for temperatures in nonlinear heat transfer equations</li>
+    <li>Determining flow rates in nonlinear fluid mechanics problems</li>
+</ul>
+
+<h3>4.1 Importance of Nonlinear Equation Solutions</h3>
+
+<p>
+Nonlinear equations often take the form:
+</p>
+
+<p>
+$$
+f(x) = 0
+$$
+</p>
+
+<p>
+Unlike linear equations, nonlinear equations can have **multiple solutions**, no solution, or solutions that must be approximated iteratively.
+</p>
+
+<h3>4.2 Common Numerical Methods</h3>
+
+<ol>
+    <li>
+        <strong>Newton-Raphson Method:</strong> Uses the derivative to iteratively approach the root.
+        <p>
+        Formula:
+        $$
+        x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}
+        $$
+        </p>
+        <p>Fast convergence if the initial guess is close to the true root.</p>
+    </li>
+    <li>
+        <strong>Secant Method:</strong> Does not require the derivative, uses previous two points.
+        <p>
+        $$
+        x_{n+1} = x_n - f(x_n)\frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})}
+        $$
+        </p>
+        <p>Slower than Newton-Raphson but useful when derivatives are hard to compute.</p>
+    </li>
+    <li>
+        <strong>Fixed-Point Iteration:</strong> Rearranges equation as \(x = g(x)\) and iterates:
+        <p>
+        $$
+        x_{n+1} = g(x_n)
+        $$
+        </p>
+        <p>Simple but requires convergence criteria: \(|g'(x)| < 1\).</p>
+    </li>
+</ol>
+
+<h3>4.3 MATLAB Example: Newton-Raphson Method</h3>
+
+<p>
+Solve the nonlinear equation for a reaction equilibrium:
+</p>
+
+<p>
+$$
+f(C) = k C^2 - C + 1 = 0
+$$
+</p>
+
+<pre><code>
+% MATLAB Code: Newton-Raphson Method
+f = @(C) 0.5*C.^2 - C + 1;   % Nonlinear equation
+df = @(C) C - 1;              % Derivative
+C0 = 0.5;                     % Initial guess
+tol = 1e-6;                   % Tolerance
+max_iter = 50;
+
+for i = 1:max_iter
+    C1 = C0 - f(C0)/df(C0);
+    if abs(C1 - C0) < tol
+        break;
+    end
+    C0 = C1;
+end
+
+disp(['Root of the equation: ', num2str(C1)]);
+</code></pre>
+
+<h3>4.4 MATLAB Example: Secant Method</h3>
+
+<pre><code>
+% MATLAB Code: Secant Method
+f = @(C) 0.5*C.^2 - C + 1; 
+C0 = 0; C1 = 1;  % Initial guesses
+tol = 1e-6;
+max_iter = 50;
+
+for i = 1:max_iter
+    C2 = C1 - f(C1)*(C1-C0)/(f(C1)-f(C0));
+    if abs(C2 - C1) < tol
+        break;
+    end
+    C0 = C1;
+    C1 = C2;
+end
+
+disp(['Root of the equation: ', num2str(C2)]);
+</code></pre>
+
+<div class="plot-container">
+    <img src="figure3.png" alt="Nonlinear Equation Convergence" width="600">
+</div>
+
+<h3>4.5 Summary</h3>
+<ul>
+    <li>Nonlinear equations are common in chemical engineering and often cannot be solved analytically.</li>
+    <li>Newton-Raphson, Secant, and Fixed-Point Iteration are standard numerical methods.</li>
+    <li>MATLAB makes it easy to implement iterative solutions and visualize convergence.</li>
+    <li>Choosing the right initial guess and method is crucial for convergence.</li>
+</ul>
+
+
+    <h2 id="chapter5">Chapter 5: Systems of Linear Equations</h2>
+    <p>Content will go here.</p>
+
+    <h2 id="chapter6">Chapter 6: Ordinary Differential Equations (ODEs)</h2>
+    <p>Content will go here.</p>
+
+    <h2 id="chapter7">Chapter 7: Partial Differential Equations (PDEs)</h2>
+    <p>Content will go here.</p>
+
+    <h2 id="chapter8">Chapter 8: Numerical Optimization</h2>
+    <p>Content will go here.</p>
+
+    <h2 id="chapter9">Chapter 9: MATLAB Applications in Chemical Engineering</h2>
+    <p>Content will go here. Example MATLAB code:</p>
+    <pre><code>
+% Example MATLAB code
+t = 0:0.1:10;
+y = exp(-0.5*t);
+plot(t,y)
+xlabel('Time (s)')
+ylabel('Concentration (mol/L)')
+grid on
+    </code></pre>
+
+    <h2 id="chapter10">Chapter 10: Real-Time Simulation and Data Analysis</h2>
+    <p>Content will go here. Placeholder for interactive simulation:</p>
+    <div class="plot-container">
+        <iframe class="simulation" src="your_simulation.html"></iframe>
+    </div>
+
+</body>
+</html>
